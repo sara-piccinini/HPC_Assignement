@@ -1,4 +1,0 @@
-INFO: localdir at /scratch/523435.hpc_2025_group_01
-INFO: your job will run on local system.
-INFO: localdir at /scratch/523435.hpc_2025_group_01
-INFO: your job will run on local system.

@@ -1,0 +1,12 @@
+size=500, np=1, time=0.951224
+size=500, np=2, time=0.474511
+size=500, np=4, time=0.238443
+size=500, np=5, time=0.193760
+size=1000, np=1, time=6.937796
+size=1000, np=2, time=3.939892
+size=1000, np=4, time=2.091007
+size=1000, np=5, time=1.702095
+size=2000, np=1, time=84.147730
+size=2000, np=2, time=42.122166
+size=2000, np=4, time=20.886695
+size=2000, np=5, time=17.023500

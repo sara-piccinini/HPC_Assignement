@@ -1,0 +1,30 @@
+INFO: localdir at /scratch/523481.hpc_2025_group_01
+INFO: your job will run on local system.
+Running with 1 MPI processes...
+DEBUG: First element A[0]: 0.765400
+DEBUG: First element B[0]: 0.707700
+Elapsed time: 3.416636 seconds
+DEBUG: Rank 0 finished computing.
+Running with 2 MPI processes...
+DEBUG: First element A[0]: 0.765400
+DEBUG: First element B[0]: 0.707700
+DEBUG: Rank 1 finished computing.
+Elapsed time: 1.720189 seconds
+DEBUG: Rank 0 finished computing.
+Running with 4 MPI processes...
+DEBUG: First element A[0]: 0.765400
+DEBUG: First element B[0]: 0.707700
+DEBUG: Rank 1 finished computing.
+DEBUG: Rank 3 finished computing.
+Elapsed time: 0.836329 seconds
+DEBUG: Rank 0 finished computing.
+DEBUG: Rank 2 finished computing.
+Running with 5 MPI processes...
+DEBUG: First element A[0]: 0.765400
+DEBUG: First element B[0]: 0.707700
+DEBUG: Rank 3 finished computing.
+DEBUG: Rank 1 finished computing.
+DEBUG: Rank 2 finished computing.
+Elapsed time: 0.720635 seconds
+DEBUG: Rank 0 finished computing.
+DEBUG: Rank 4 finished computing.
