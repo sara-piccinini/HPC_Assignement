@@ -1,10 +1,26 @@
+# MPI_systolic_arrays/input/code/generate_matrices.py
 import numpy as np
+from pathlib import Path
 
-matrix_1 = np.random.uniform(0.0, 100.0, size=(2000, 2000)).astype(np.float64)
-matrix_2 = np.random.uniform(0.0, 100.0, size=(2000, 2000)).astype(np.float64)
+# directory dello script: .../MPI_systolic_arrays/input/code
+SCRIPT_DIR = Path(__file__).resolve().parent
+# vogliamo salvare in .../MPI_systolic_arrays/input/matrices
+OUTDIR = SCRIPT_DIR.parent / "matrices"
+OUTDIR.mkdir(parents=True, exist_ok=True)
 
-np.savetxt("matrix_A_2000.csv", matrix_1, delimiter =",", fmt="%.3f")
-np.savetxt("matrix_B_2000.csv", matrix_2, delimiter =",", fmt="%.3f")
-# This script generates two random matrices of size 2000x2000 with values between 0.0 and 100.0,
-# saves them to CSV files with three decimal places, and uses float64 data type.
-# The matrices are saved as 'matrix_A_2000.csv' and 'matrix_B_2000.csv'.
+def save_with_trailing_commas(path, M, fmt="%.6f"):
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        for row in M:
+            f.write(",".join(fmt % v for v in row) + ",\n")
+
+def gen_and_save(size, low=0.0, high=100.0):
+    A = np.random.uniform(low, high, size=(size, size)).astype(np.float64)
+    B = np.random.uniform(low, high, size=(size, size)).astype(np.float64)
+    save_with_trailing_commas(OUTDIR / f"matrix_A_{size}.csv", A)
+    save_with_trailing_commas(OUTDIR / f"matrix_B_{size}.csv", B)
+
+if __name__ == "__main__":
+    for n in (500, 1000, 2000):
+        gen_and_save(n)
+    print(f"OK: file creati in {OUTDIR}")
+

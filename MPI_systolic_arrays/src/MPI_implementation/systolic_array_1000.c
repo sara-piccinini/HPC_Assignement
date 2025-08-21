@@ -4,7 +4,7 @@
 #include <math.h>
 #include <mpi.h>
 
-#define N 2000   // Global matrix dimension
+#define N 1000   // Global matrix dimension
 
 // Function prototypes
 void load_matrix_csv(const char *filename, double *matrix, int n);
