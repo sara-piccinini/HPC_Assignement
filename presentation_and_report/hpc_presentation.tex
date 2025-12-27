@@ -1,8 +1,26 @@
 \documentclass{beamer}
 
-% Tema semplice e leggibile
+
 \usetheme{Madrid}
 \usecolortheme{default}
+\setbeamertemplate{footline}{}
+\usepackage{graphicx}
+\usepackage{amsmath}
+
+%\usepackage{tcolorbox}
+
+
+
+% --- Section colors ---
+\definecolor{mpiYellow}{RGB}{220,180,20}
+\definecolor{cudaGreen}{RGB}{40,140,90}
+\definecolor{ompRed}{RGB}{180,40,40}
+
+% --- Command to change top bar color ---
+\newcommand{\sectioncolor}[1]{%
+  \setbeamercolor{frametitle}{bg=#1, fg=white}
+}
+
 
 % Pacchetti utili
 \usepackage{amsmath}
@@ -10,9 +28,8 @@
 \usepackage{booktabs}
 
 % Info titolo
-\title{HPC Assignment}
-\subtitle{Systolic Arrays, CUDA Filtering, OpenMP}
-\author{Simone Pio Maurutto \\ Sara Maddalena Piccinini  \\Francesca Scognamiglio}
+\title{HPC Assignment Presentation}
+\author{\texorpdfstring{Simone Pio Maurutto \\ Sara Maddalena Piccinini \\ Francesca Scognamiglio}{Simone Pio Maurutto, Sara Maddalena Piccinini, Francesca Scognamiglio}}
 \institute{Politecnico di Torino}
 \setbeamerfont{institute}{size=\Large}
 \date{January 2026}
@@ -25,23 +42,206 @@
 \end{frame}
 
 % Slide indice
-\begin{frame}{Outline}
-  \tableofcontents
+\begin{frame}{Index}
+
+\begin{itemize}
+  \item Systolic array structures for matrix multiplication with MPI
+  {\color{mpiYellow}\rule{\linewidth}{0.6pt}}
+
+  \vspace{0.3cm}
+
+  \item Fundamentals of multi-dimensional data processing with CUDA
+  {\color{cudaGreen}\rule{\linewidth}{0.6pt}}
+
+  \vspace{0.3cm}
+
+  \item Heat Diffusion Simulation in 2D Grid with OpenMP
+  {\color{ompRed}\rule{\linewidth}{0.6pt}}
+\end{itemize}
+
 \end{frame}
 
-\section{Introduction}
 
-\begin{frame}{Introduction}
-  \begin{itemize}
-    \item Overview of the HPC 2025 assignment
-    \item Parallel programming models used
-    \item Performance evaluation
-  \end{itemize}
+%SARA
+\section{Systolic array structures for matrix multiplication with MPI}
+\sectioncolor{mpiYellow}
+
+
+\begin{frame}{General Overview}
+  \begin{enumerate}
+    \item Introduction
+    \item Methodology
+    \item Metrics
+    \item Results and Analysis
+    \item Conclusions
+  \end{enumerate}
 \end{frame}
 
 \section{MPI Systolic Arrays}
 
-\begin{frame}{MPI Systolic Arrays}
+\begin{frame}{Introduction}
+\begin{itemize}
+  \item Design and implementation of a systolic array architecture for matrix multiplication
+  \item Distributed realization using MPI processing elements
+  \item Performance evaluation and scalability analysis
+  \item Discussion of results and trade-offs
+\end{itemize}
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}{Methodology -- Software Workflow}
+\begin{enumerate}
+  \item Partition of input matrices among processing elements (PEs)
+  \item Cannon’s algorithm initialization for block alignment
+  \item Cannon’s algorithm computation phase
+  \item Gathering of local results into the output matrix
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}{Methodology - Processing elements and Systolic Behavior}
+\begin{columns}
+
+\column{0.45\textwidth}
+Processing Elements (PEs) are the fundamental units of the systolic array architecture.
+They perform local computations and propagate data across the array over time.
+
+\column{0.55\textwidth}
+\centering
+\includegraphics[width=\linewidth]{immagini/MPI_general_illustration.png}
+
+\end{columns}
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+
+\begin{frame}{Methodology -- Process Mapping}
+
+\begin{itemize}
+  \item Each Processing Element (PE) is mapped to one MPI process
+  \item Block size: $n = N / p$ with N input matrices and p number of rocess per dimension
+  \item Processes arranged in a 2D periodic grid
+  \item Inter-process communication implemented via MPI
+\end{itemize}
+
+\vspace{0.4cm}
+
+\centering
+\includegraphics[width=0.7\textwidth]{immagini/MPI_processes.png}
+
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}{Methodology -- Data Distribution and Initialization}
+
+\begin{itemize}
+  \item Input matrices are distributed among processing elements
+  \item The PEsre initialized according to Cannon's algorithm requirements
+  \item Data distribution and gathering implemented using MPI Scatter and Gather operations after the main computation
+\end{itemize}
+
+\vspace{0.3cm}
+
+\noindent
+\setlength{\fboxsep}{6pt}%
+\setlength{\fboxrule}{0.6pt}%
+\fbox{%
+  \begin{minipage}{0.95\textwidth}
+  \footnotesize
+
+  \textbf{Data distribution among processing elements}
+  \vspace{0.1cm}
+
+  \centering
+  \includegraphics[width=0.9\textwidth]{immagini/code1.png}
+
+  \vspace{0.25cm}
+
+  \textbf{Result gathering after the computation}
+  \vspace{0.1cm}
+
+  \centering
+  \includegraphics[width=0.9\textwidth]{immagini/code2.png}
+
+  \end{minipage}%
+}
+
+\end{frame}
+
+
+
+
+
+\begin{frame}{Methodology -- Computation Phase}
+
+During each iteration, the processing elements:
+\begin{enumerate}
+  \item Compute the local multiply
+  \item Exchange data blocks with neighboring processes
+        (A left, B up on a 2D periodic grid)
+\end{enumerate}
+
+\vspace{0.05cm}
+
+\centering
+\includegraphics[width=0.58\textwidth]{immagini/immagine3.png}
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+
+
+\begin{frame}{Metrics}
+\begin{itemize}
+  \item Experiments were executed on one or two nodes of the \textbf{Legion HPC cluster}
+  \item The number of MPI processes was varied according to the matrix size and the 2D process grid configuration
+  \item Execution time was measured on the root process using \textbf{MPI\_Wtime()}
+\end{itemize}
+\end{frame}
+
+
+
+
+
+
+
+
+
+
+
+\begin{frame}{Results and Analysis}
+  \begin{itemize}
+    \item Matrix-matrix multiplication
+    \item Process grid and data movement
+    \item Performance considerations
+  \end{itemize}
+\end{frame}
+  \begin{frame}{Conclusions}
   \begin{itemize}
     \item Matrix-matrix multiplication
     \item Process grid and data movement
@@ -49,7 +249,32 @@
   \end{itemize}
 \end{frame}
 
-\section{CUDA Filtering}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%FRANCI
+\section{Fundamentals of multi-dimensional data processing with CUDA}
+\sectioncolor{cudaGreen}
 
 \begin{frame}{CUDA Filtering}
   \begin{itemize}
@@ -59,7 +284,30 @@
   \end{itemize}
 \end{frame}
 
-\section{OpenMP Heat Diffusion}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%SIMON
+\section{Heat Diffusion Simulation in 2D Grid with OpenMP}
+\sectioncolor{ompRed}
 
 \begin{frame}{OpenMP Heat Diffusion}
   \begin{itemize}
@@ -68,7 +316,13 @@
   \end{itemize}
 \end{frame}
 
-\section{Conclusions}
+
+
+
+
+%CONCLUSIONI
+\section{Conclusions} 
+\sectioncolor{structure}
 
 \begin{frame}{Conclusions}
   \begin{itemize}
