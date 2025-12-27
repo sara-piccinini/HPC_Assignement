@@ -234,21 +234,66 @@ During each iteration, the processing elements:
 
 
 
-\begin{frame}{Results and Analysis}
-  \begin{itemize}
-    \item Matrix-matrix multiplication
-    \item Process grid and data movement
-    \item Performance considerations
-  \end{itemize}
-\end{frame}
-  \begin{frame}{Conclusions}
-  \begin{itemize}
-    \item Matrix-matrix multiplication
-    \item Process grid and data movement
-    \item Performance considerations
-  \end{itemize}
+\begin{frame}{Results and Analysis for the 500x500 Matrix}
+
+ Sequential execution time: 3.40\,s.
+
+
+
+\centering
+\includegraphics[width=0.65\linewidth]{immagini/500res1.png}
+
+\vspace{0.02cm}
+
+\includegraphics[width=0.65\linewidth]{immagini/500res2.png}
+
 \end{frame}
 
+
+
+
+
+\begin{frame}{Results and Analysis for the 1000x1000 Matrix}
+ Sequential execution time: 4.88\,s.
+
+
+ \centering
+\includegraphics[width=0.65\linewidth]{immagini/1000res1.png}
+
+\vspace{0.02cm}
+
+\includegraphics[width=0.65\linewidth]{immagini/1000res2.png}
+\end{frame}
+
+
+
+
+\begin{frame}{Results and Analysis for the 2000x2000 Matrix}
+ Sequential execution time: 40.38\,s.
+
+
+ \centering
+\includegraphics[width=0.65\linewidth]{immagini/2000res1.png}
+
+\vspace{0.02cm}
+
+\includegraphics[width=0.65\linewidth]{immagini/2000res2.png}
+\end{frame}
+
+
+
+
+\begin{frame}{Conclusions}
+
+\begin{itemize}
+  \item Increasing parallelism does not always translate into improved performance.
+  
+  \item Running the application on multiple nodes introduces additional overhead, leading to different performance compared to a single-node execution with the same number of processes.
+  
+  \item The most favorable speed-up values are obtained when computations are confined to a single node.
+\end{itemize}
+
+\end{frame}
 
 
 
