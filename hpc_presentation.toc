@@ -1,5 +1,0 @@
-\beamer@sectionintoc {1}{Introduction}{3}{0}{1}
-\beamer@sectionintoc {2}{MPI Systolic Arrays}{4}{0}{2}
-\beamer@sectionintoc {3}{CUDA Filtering}{5}{0}{3}
-\beamer@sectionintoc {4}{OpenMP Heat Diffusion}{6}{0}{4}
-\beamer@sectionintoc {5}{Conclusions}{7}{0}{5}
