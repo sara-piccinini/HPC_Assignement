@@ -1,0 +1,26 @@
+\frametitle{Methodology -- Data Distribution and Initialization}
+
+\begin{itemize}
+  \item Input matrices are distributed among processing elements
+  \item Initial block alignment follows Cannon's algorithm
+  \item Each PE starts with the correct submatrices for the computation
+\end{itemize}
+
+\vspace{0.3cm}
+
+\noindent\setlength{\fboxsep}{6pt}%
+\setlength{\fboxrule}{0.6pt}%
+\fbox{%
+  \begin{minipage}{0.95\textwidth}
+  \footnotesize
+\begin{verbatim}
+MPI_Scatter(A, ..., A_block, ..., MPI_COMM_WORLD);
+MPI_Scatter(B, ..., B_block, ..., MPI_COMM_WORLD);
+
+/* Cannon initialization */
+
+MPI_Gather(C_block, ..., C, ..., MPI_COMM_WORLD);
+\end{verbatim}
+  \end{minipage}%
+}
+

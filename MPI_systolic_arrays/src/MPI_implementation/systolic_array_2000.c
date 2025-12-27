@@ -1,254 +1,249 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
 #include <mpi.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
 
-// Global matrix size (square N x N)
 #define N 2000
 
-// I/O helpers
-void load_csv(const char *filename, double *matrix, int n);
-void save_csv(const char *filename, const double *matrix, int n);
+void read_matrix_from_csv();
+void write_matrix_to_csv();
 
-int main(int argc, char *argv[]) {
-    // ---- Basic argument guard (no MPI needed to print this) ----
-    if (argc < 5) {
-        // argv[0] is the program name
-        fprintf(stderr, "Usage: %s <A.csv> <B.csv> <C_out.csv> <time_log.csv>\n", argv[0]);
-        return 1;
+
+
+int main(int argc, char *argv[]){
+	
+	int rank, size;
+	double start_time, end_time, elapsed_time;
+	
+	if (argc < 5) {
+		if (rank == 0) {
+			printf("Missing input data\n", argv[0]);
+		}
+		MPI_Finalize();
+		return 1;
+	}
+	MPI_Init(&argc, &argv);
+	
+	if (rank == 0) {
+		start_time = MPI_Wtime();
+	}
+	
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
+	
+	int p = (int)sqrt(size);	
+	
+	
+	if (p*p!=size){
+		if (rank==0){
+			printf("Number of processes must be a perfect square.\n");
+		}
+		MPI_Finalize();
+		return 1;
+	}
+	
+	
+	
+	if (N%p!=0){
+		if (rank==0){
+			printf("Matrix size must be divisible by p = %d\n", p);
+		}
+		MPI_Finalize();
+		return 1;
+	}
+
+	int block_size = N/p; 
+	
+	double *A_block = malloc(block_size * block_size * sizeof(double));	
+	double *B_block = malloc(block_size * block_size * sizeof(double));
+	double *C_block = calloc(block_size * block_size, sizeof(double));	
+	
+	double *A=NULL, *B=NULL, *C=NULL;
+	
+	
+	if (rank==0){
+		A = malloc(N * N * sizeof(double));
+		B = malloc(N * N * sizeof(double));
+		C = malloc(N * N * sizeof(double));
+		read_matrix_from_csv(argv[1],A,N);
+		read_matrix_from_csv(argv[2],B,N);
+	}
+	
+	
+	int *counts = malloc(size * sizeof(int));	
+	int *displs = malloc(size * sizeof(int));	
+	
+	for (int i=0,idx=0; i<p; i++){
+		for (int j=0; j<p; j++, idx++){
+			counts[idx] = 1;
+			displs[idx] = i * N * block_size + j * block_size;	
+		}
+	}
+	
+	
+	MPI_Datatype blocktype1, blocktype2;
+	MPI_Type_vector(block_size, block_size, N, MPI_DOUBLE, &blocktype1);	
+	MPI_Type_create_resized(blocktype1, 0, sizeof(double), &blocktype2);
+	MPI_Type_commit(&blocktype2);	
+	
+	
+	MPI_Scatterv(A, counts, displs, blocktype2, A_block, block_size * block_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Scatterv(B, counts, displs, blocktype2, B_block, block_size * block_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	
+	
+	
+	int dims[2] = {p, p};
+    int periods[2] = {1, 1};
+    MPI_Comm grid_comm;
+    MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, 1, &grid_comm);
+	
+	int coords[2];
+    MPI_Cart_coords(grid_comm, rank, 2, coords);
+    int my_row = coords[0];
+    int my_col = coords[1];
+	
+	int left, right, up, down;
+    MPI_Cart_shift(grid_comm, 1, -1, &right, &left); 
+    MPI_Cart_shift(grid_comm, 0, -1, &down, &up);    e
+	
+	
+	
+	double *tmp_block = malloc(block_size * block_size * sizeof(double));
+	for (int i = 0; i < my_row; i++) {
+    MPI_Status status;
+    if ((my_col+my_row) % 2 == 0) {
+        MPI_Send(A_block, block_size*block_size, MPI_DOUBLE, left, 0, grid_comm);
+        MPI_Recv(tmp_block, block_size*block_size, MPI_DOUBLE, right, 0, grid_comm, &status);
+		}
+	else {
+        MPI_Recv(tmp_block, block_size*block_size, MPI_DOUBLE, right, 0, grid_comm, &status);
+        MPI_Send(A_block, block_size*block_size, MPI_DOUBLE, left, 0, grid_comm);
+		}
+    memcpy(A_block, tmp_block, block_size*block_size*sizeof(double));
+	}
+	for (int i = 0; i < my_col; i++) {
+    MPI_Status status;
+    if ((my_col+my_row) % 2 == 0) {
+        MPI_Send(B_block, block_size*block_size, MPI_DOUBLE, up, 0, grid_comm);
+        MPI_Recv(tmp_block, block_size*block_size, MPI_DOUBLE, down, 0, grid_comm, &status);
+		} 
+	else {
+        MPI_Recv(tmp_block, block_size*block_size, MPI_DOUBLE, down, 0, grid_comm, &status);
+        MPI_Send(B_block, block_size*block_size, MPI_DOUBLE, up, 0, grid_comm);
+		}
+    memcpy(B_block, tmp_block, block_size*block_size*sizeof(double));
+	}
+	free(tmp_block);
+	
+	
+	
+	for (int k = 0; k < p; k++) {
+       
+	        for (int i = 0; i < block_size; i++) {
+	            for (int j = 0; j < block_size; j++) {
+	                double sum = 0.0;
+	                for (int l = 0; l < block_size; l++) {
+	                    sum += A_block[i * block_size + l] * B_block[l * block_size + j];
+	                }
+	                C_block[i * block_size + j] += sum;
+	            }
+	        }
+	
+        double *tmp_A = malloc(block_size * block_size * sizeof(double));
+		double *tmp_B = malloc(block_size * block_size * sizeof(double));
+
+		
+		MPI_Status statusA;
+		if ((my_col+my_row) % 2 == 0) {
+			MPI_Send(A_block, block_size*block_size, MPI_DOUBLE, left, 0, grid_comm);
+			MPI_Recv(tmp_A, block_size*block_size, MPI_DOUBLE, right, 0, grid_comm, &statusA);
+			} 
+		else {
+			MPI_Recv(tmp_A, block_size*block_size, MPI_DOUBLE, right, 0, grid_comm, &statusA);
+			MPI_Send(A_block, block_size*block_size, MPI_DOUBLE, left, 0, grid_comm);
+			}
+		memcpy(A_block, tmp_A, block_size*block_size*sizeof(double));
+		
+		MPI_Status statusB;
+		if ((my_col+my_row) % 2 == 0) {
+			MPI_Send(B_block, block_size*block_size, MPI_DOUBLE, up, 0, grid_comm);
+			MPI_Recv(tmp_B, block_size*block_size, MPI_DOUBLE, down, 0, grid_comm, &statusB);
+			} 
+		else {
+			MPI_Recv(tmp_B, block_size*block_size, MPI_DOUBLE, down, 0, grid_comm, &statusB);
+			MPI_Send(B_block, block_size*block_size, MPI_DOUBLE, up, 0, grid_comm);
+			}
+		memcpy(B_block, tmp_B, block_size*block_size*sizeof(double));
+
+		free(tmp_A);
+		free(tmp_B);
     }
 
-    // ---- MPI bootstrap ----
-    MPI_Init(&argc, &argv);
+	
+	MPI_Gatherv(C_block, block_size * block_size, MPI_DOUBLE, C, counts, displs, blocktype2, 0, MPI_COMM_WORLD);
 
-    int rank = -1, world_size = 0;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+	if (rank == 0) {
+		write_matrix_to_csv(argv[3], C, N);
+	}
+	
+	
+    free(A_block); free(B_block); free(C_block);
+    free(counts); free(displs);
+    MPI_Type_free(&blocktype2);
+    MPI_Comm_free(&grid_comm);
+	
+	if (rank == 0) {
+		end_time = MPI_Wtime();
+		elapsed_time = end_time - start_time;
 
-    // Start timing only after MPI is up
-    double t0 = 0.0;
-    if (rank == 0) {
-        t0 = MPI_Wtime();
-    }
-
-    // We arrange processes in a p x p Cartesian grid
-    int p = (int) sqrt((double)world_size);
-    if (p * p != world_size) {
-        if (rank == 0) {
-            fprintf(stderr, "Error: number of processes must be a perfect square.\n");
-        }
-        MPI_Finalize();
-        return 1;
-    }
-
-    // N must be divisible by p so each process gets a square block
-    if (N % p != 0) {
-        if (rank == 0) {
-            fprintf(stderr, "Error: N (%d) must be divisible by p (%d).\n", N, p);
-        }
-        MPI_Finalize();
-        return 1;
-    }
-
-    // Local block edge length
-    const int block = N / p;
-
-    // Local tiles
-    double *A_loc = (double *) malloc((size_t)block * block * sizeof(double));
-    double *B_loc = (double *) malloc((size_t)block * block * sizeof(double));
-    double *C_loc = (double *) calloc((size_t)block * block, sizeof(double));
-
-    // Global matrices (allocated only on root)
-    double *A = NULL, *B = NULL, *C = NULL;
-    if (rank == 0) {
-        A = (double *) malloc((size_t)N * N * sizeof(double));
-        B = (double *) malloc((size_t)N * N * sizeof(double));
-        C = (double *) malloc((size_t)N * N * sizeof(double));
-        load_csv(argv[1], A, N);
-        load_csv(argv[2], B, N);
-    }
-
-    // ---- Build scatter metadata (counts/offsets in blocks) ----
-    int *sendcounts = (int *) malloc((size_t)world_size * sizeof(int));
-    int *displacements = (int *) malloc((size_t)world_size * sizeof(int));
-    for (int i = 0, idx = 0; i < p; ++i) {
-        for (int j = 0; j < p; ++j, ++idx) {
-            sendcounts[idx] = 1; // one block per destination rank
-            displacements[idx] = i * N * block + j * block; // top-left index of block
-        }
-    }
-
-    // ---- Define a derived datatype for a block (block x block, stride N) ----
-    MPI_Datatype block_t_raw, block_t;
-    MPI_Type_vector(block, block, N, MPI_DOUBLE, &block_t_raw);
-    // Resize so blocks are tightly packed when scattering/gathering
-    MPI_Type_create_resized(block_t_raw, 0, sizeof(double), &block_t);
-    MPI_Type_commit(&block_t);
-
-    // ---- Distribute tiles of A and B ----
-    MPI_Scatterv(A, sendcounts, displacements, block_t, A_loc, block * block, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Scatterv(B, sendcounts, displacements, block_t, B_loc, block * block, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-
-    // ---- Create a 2D periodic Cartesian topology ----
-    int dims[2] = { p, p };
-    int periods[2] = { 1, 1 }; // wrap-around in both directions
-    MPI_Comm grid;
-    MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, 1, &grid);
-
-    int coords[2];
-    MPI_Cart_coords(grid, rank, 2, coords);
-    const int my_row = coords[0];
-    const int my_col = coords[1];
-
-    int nbr_left, nbr_right, nbr_up, nbr_down;
-    MPI_Cart_shift(grid, 1, -1, &nbr_right, &nbr_left); // shift in columns (left/right)
-    MPI_Cart_shift(grid, 0, -1, &nbr_down, &nbr_up);    // shift in rows (up/down)
-
-    // ---- Initial alignment (Cannon) ----
-    double *buffer = (double *) malloc((size_t)block * block * sizeof(double));
-
-    // Shift A left by my_row
-    for (int s = 0; s < my_row; ++s) {
-        MPI_Status st;
-        if (((my_row + my_col) & 1) == 0) {
-            MPI_Send(A_loc, block * block, MPI_DOUBLE, nbr_left, 0, grid);
-            MPI_Recv(buffer, block * block, MPI_DOUBLE, nbr_right, 0, grid, &st);
-        } else {
-            MPI_Recv(buffer, block * block, MPI_DOUBLE, nbr_right, 0, grid, &st);
-            MPI_Send(A_loc, block * block, MPI_DOUBLE, nbr_left, 0, grid);
-        }
-        memcpy(A_loc, buffer, (size_t)block * block * sizeof(double));
-    }
-
-    // Shift B up by my_col
-    for (int s = 0; s < my_col; ++s) {
-        MPI_Status st;
-        if (((my_row + my_col) & 1) == 0) {
-            MPI_Send(B_loc, block * block, MPI_DOUBLE, nbr_up, 0, grid);
-            MPI_Recv(buffer, block * block, MPI_DOUBLE, nbr_down, 0, grid, &st);
-        } else {
-            MPI_Recv(buffer, block * block, MPI_DOUBLE, nbr_down, 0, grid, &st);
-            MPI_Send(B_loc, block * block, MPI_DOUBLE, nbr_up, 0, grid);
-        }
-        memcpy(B_loc, buffer, (size_t)block * block * sizeof(double));
-    }
-    free(buffer);
-
-    // ---- Main Cannon loop: compute + rotate tiles ----
-    for (int step = 0; step < p; ++step) {
-        // Local block multiply-add: C_loc += A_loc * B_loc
-        for (int i = 0; i < block; ++i) {
-            for (int j = 0; j < block; ++j) {
-                double acc = 0.0;
-                for (int k = 0; k < block; ++k) {
-                    acc += A_loc[i * block + k] * B_loc[k * block + j];
-                }
-                C_loc[i * block + j] += acc;
-            }
-        }
-
-        // Rotate A left and B up by one block (with deadlock avoidance)
-        double *bufA = (double *) malloc((size_t)block * block * sizeof(double));
-        double *bufB = (double *) malloc((size_t)block * block * sizeof(double));
-
-        MPI_Status stA, stB;
-
-        if (((my_row + my_col) & 1) == 0) {
-            MPI_Send(A_loc, block * block, MPI_DOUBLE, nbr_left, 0, grid);
-            MPI_Recv(bufA, block * block, MPI_DOUBLE, nbr_right, 0, grid, &stA);
-        } else {
-            MPI_Recv(bufA, block * block, MPI_DOUBLE, nbr_right, 0, grid, &stA);
-            MPI_Send(A_loc, block * block, MPI_DOUBLE, nbr_left, 0, grid);
-        }
-        memcpy(A_loc, bufA, (size_t)block * block * sizeof(double));
-
-        if (((my_row + my_col) & 1) == 0) {
-            MPI_Send(B_loc, block * block, MPI_DOUBLE, nbr_up, 0, grid);
-            MPI_Recv(bufB, block * block, MPI_DOUBLE, nbr_down, 0, grid, &stB);
-        } else {
-            MPI_Recv(bufB, block * block, MPI_DOUBLE, nbr_down, 0, grid, &stB);
-            MPI_Send(B_loc, block * block, MPI_DOUBLE, nbr_up, 0, grid);
-        }
-        memcpy(B_loc, bufB, (size_t)block * block * sizeof(double));
-
-        free(bufA);
-        free(bufB);
-    }
-
-    // ---- Gather C blocks back to root ----
-    MPI_Gatherv(C_loc, block * block, MPI_DOUBLE,
-                C, sendcounts, displacements, block_t,
-                0, MPI_COMM_WORLD);
-
-    // ---- Persist outputs on rank 0 ----
-    if (rank == 0) {
-        save_csv(argv[3], C, N);
-
-        double t1 = MPI_Wtime();
-        double elapsed = t1 - t0;
-
-        FILE *tf = fopen(argv[4], "w");
-        if (tf) {
-            // store (num_procs, elapsed_seconds)
-            fprintf(tf, "%d,%.6f\n", world_size, elapsed);
-            fclose(tf);
-        } else {
-            perror("Error opening time log file");
-        }
-    }
-
-    // ---- Cleanup ----
-    free(A_loc);
-    free(B_loc);
-    free(C_loc);
-    free(sendcounts);
-    free(displacements);
-
-    if (rank == 0) {
-        free(A);
-        free(B);
-        free(C);
-    }
-
-    MPI_Type_free(&block_t);
-    MPI_Comm_free(&grid);
+		FILE *fp = fopen(argv[4], "w"); 
+		if (fp) {
+			fprintf(fp, "%d,%.6f\n", size, elapsed_time);
+			fclose(fp);
+		} else {
+			perror("Error in opening time file");
+		}
+	}
+	
     MPI_Finalize();
-    return 0;
+    return 0;	
 }
 
-// Reads a dense N x N matrix from a CSV file (row-major)
-void load_csv(const char *filename, double *matrix, int n) {
+
+void read_matrix_from_csv(const char *filename, double *matrix, int n) {
     FILE *fp = fopen(filename, "r");
     if (!fp) {
         perror("Error opening input matrix file");
         exit(1);
     }
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
-            if (fscanf(fp, "%lf,", &matrix[i * n + j]) != 1) {
-                fprintf(stderr, "Error parsing element (%d,%d) from %s\n", i, j, filename);
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            int result = fscanf(fp, "%lf,", &matrix[i*n + j]);
+            if (result != 1) {
+                fprintf(stderr, "Error reading element [%d,%d]\n", i, j);
                 fclose(fp);
                 exit(1);
             }
         }
     }
+
     fclose(fp);
 }
 
-// Writes a dense N x N matrix to a CSV file (row-major)
-void save_csv(const char *filename, const double *matrix, int n) {
+void write_matrix_to_csv(const char *filename, double *matrix, int n) {
     FILE *fp = fopen(filename, "w");
     if (!fp) {
         perror("Error opening output matrix file");
         exit(1);
     }
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
-            fprintf(fp, "%.6f", matrix[i * n + j]);
-            if (j < n - 1) fputc(',', fp);
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            fprintf(fp, "%.6f", matrix[i*n + j]);
+            if (j < n-1) fprintf(fp, ",");
         }
-        fputc('\n', fp);
+        fprintf(fp, "\n");
     }
     fclose(fp);
 }

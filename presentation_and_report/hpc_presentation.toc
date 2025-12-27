@@ -1,0 +1,5 @@
+\beamer@sectionintoc {1}{Systolic array structures for matrix multiplication with MPI}{3}{0}{1}
+\beamer@sectionintoc {2}{MPI Systolic Arrays}{4}{0}{2}
+\beamer@sectionintoc {3}{Fundamentals of multi-dimensional data processing with CUDA}{13}{0}{3}
+\beamer@sectionintoc {4}{Heat Diffusion Simulation in 2D Grid with OpenMP}{14}{0}{4}
+\beamer@sectionintoc {5}{Conclusions}{15}{0}{5}
