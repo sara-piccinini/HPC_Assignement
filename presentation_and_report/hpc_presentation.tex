@@ -1,0 +1,81 @@
+\documentclass{beamer}
+
+% Tema semplice e leggibile
+\usetheme{Madrid}
+\usecolortheme{default}
+
+% Pacchetti utili
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+
+% Info titolo
+\title{HPC Assignment}
+\subtitle{Systolic Arrays, CUDA Filtering, OpenMP}
+\author{Simone Pio Maurutto \\ Sara Maddalena Piccinini  \\Francesca Scognamiglio}
+\institute{Politecnico di Torino}
+\setbeamerfont{institute}{size=\Large}
+\date{January 2026}
+
+\begin{document}
+
+% Slide titolo
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% Slide indice
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+\section{Introduction}
+
+\begin{frame}{Introduction}
+  \begin{itemize}
+    \item Overview of the HPC 2025 assignment
+    \item Parallel programming models used
+    \item Performance evaluation
+  \end{itemize}
+\end{frame}
+
+\section{MPI Systolic Arrays}
+
+\begin{frame}{MPI Systolic Arrays}
+  \begin{itemize}
+    \item Matrix-matrix multiplication
+    \item Process grid and data movement
+    \item Performance considerations
+  \end{itemize}
+\end{frame}
+
+\section{CUDA Filtering}
+
+\begin{frame}{CUDA Filtering}
+  \begin{itemize}
+    \item Image filtering with CUDA kernels
+    \item Memory access patterns
+    \item Speedup over CPU implementation
+  \end{itemize}
+\end{frame}
+
+\section{OpenMP Heat Diffusion}
+
+\begin{frame}{OpenMP Heat Diffusion}
+  \begin{itemize}
+    \item Parallelization strategy
+    \item Strong and weak scaling
+  \end{itemize}
+\end{frame}
+
+\section{Conclusions}
+
+\begin{frame}{Conclusions}
+  \begin{itemize}
+    \item Summary of results
+    \item Lessons learned
+    \item Possible improvements
+  \end{itemize}
+\end{frame}
+
+\end{document}
