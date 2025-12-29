@@ -236,48 +236,116 @@ During each iteration, the processing elements:
 
 \begin{frame}{Results and Analysis for the 500x500 Matrix}
 
- Sequential execution time: 3.40\,s.
+ Sequential execution time: 3.37\,s.
 
-
-
+\begin{table}[h]
 \centering
-\includegraphics[width=0.65\linewidth]{immagini/500res1.png}
+\caption{Execution time and speed-up on 1 node (top) and on 2 nodes (bottom).}
+\begin{tabular}{ccc}
+\hline
+\textbf{Processes} & \textbf{Time (s)} & \textbf{Speed-Up} \\
+\hline
+4  & 0.24 & 14.04 \\
+16 & 0.13 & 25.92 \\
+25 & 0.13 & 25.92 \\
+\hline
+\end{tabular}
 
-\vspace{0.02cm}
+\vspace{0.8em}
 
-\includegraphics[width=0.65\linewidth]{immagini/500res2.png}
+\begin{tabular}{ccc}
+\hline
+\textbf{Processes} & \textbf{Time (s)} & \textbf{Speed-Up} \\
+\hline
+4  & 0.31 & 10.97 \\
+16 & 0.45 & 7.56 \\
+25 & 0.61 & 5.52 \\
+\hline
+\end{tabular}
+\end{table}
+
 
 \end{frame}
+
+
 
 
 
 
 
 \begin{frame}{Results and Analysis for the 1000x1000 Matrix}
- Sequential execution time: 4.88\,s.
+ Sequential execution time: 4.79\,s.
 
 
- \centering
-\includegraphics[width=0.65\linewidth]{immagini/1000res1.png}
+ \begin{table}[h]
+\centering
+\caption{Execution time and speed-up on 1 node (top) and on 2 nodes (bottom).}
+\begin{tabular}{ccc}
+\hline
+\textbf{Processes} & \textbf{Time (s)} & \textbf{Speed-Up} \\
+\hline
+4  & 2.27 & 2.11 \\
+16 & 0.68 & 7.04 \\
+25 & 0.62 & 7.02 \\
+\hline
+\end{tabular}
 
-\vspace{0.02cm}
+\vspace{0.8em}
 
-\includegraphics[width=0.65\linewidth]{immagini/1000res2.png}
+\begin{tabular}{ccc}
+\hline
+\textbf{Processes} & \textbf{Time (s)} & \textbf{Speed-Up} \\
+\hline
+4  & 2.15 & 2.22 \\
+16 & 1.05 & 5.56 \\
+25 & 1.61 & 2.97\\
+64 & 2.33 & 2.05 \\
+\hline
+\end{tabular}
+\end{table}
+
+
 \end{frame}
 
 
 
 
+
+
+
+
+
+
+
 \begin{frame}{Results and Analysis for the 2000x2000 Matrix}
- Sequential execution time: 40.38\,s.
+ Sequential execution time: 38.40\,s.
 
+  \begin{table}[h]
+\centering
+\caption{Execution time and speed-up on 1 node (top) and on 2 nodes (bottom).}
+\begin{tabular}{ccc}
+\hline
+\textbf{Processes} & \textbf{Time (s)} & \textbf{Speed-Up} \\
+\hline
+4  & 15.33 & 2.50 \\
+16 & 3.91 & 9.82 \\
+25 & 3.92 & 9.79 \\
+\hline
+\end{tabular}
 
- \centering
-\includegraphics[width=0.65\linewidth]{immagini/2000res1.png}
+\vspace{0.8em}
 
-\vspace{0.02cm}
-
-\includegraphics[width=0.65\linewidth]{immagini/2000res2.png}
+\begin{tabular}{ccc}
+\hline
+\textbf{Processes} & \textbf{Time (s)} & \textbf{Speed-Up} \\
+\hline
+4  & 15.03 & 2.55 \\
+16 & 4.58 & 8.38 \\
+25 & 4.10 & 9.36\\
+64 & 4.33 & 8.86 \\
+\hline
+\end{tabular}
+\end{table}
 \end{frame}
 
 
