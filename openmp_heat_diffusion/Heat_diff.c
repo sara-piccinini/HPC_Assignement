@@ -8,6 +8,7 @@
 #define T_env  15.0
 #define Wx 0.3
 #define Wy 0.2
+#define PT 10
 int ITER = 1000;
 
 
@@ -16,7 +17,8 @@ void init_matrix_b(double *M);
 void init_zero(double *M);
 void print_matrix(double *M);
 void fprint_matrix(double *M, FILE *fp);
-void run_diffusion(double *M, double *N, char type);
+void run_diffusion_a(double *M, double *N);
+void run_diffusion_b(double *M, double *N);
 void isotropic_nv(double *M, double *N, int j, int k);
 void anisotropic_nv(double *M, double *N, int j, int k);
 void print_usage (void);
@@ -54,14 +56,14 @@ int main(int argc, char *argv[]) {
 
             init_matrix_a(M);
             // print_matrix(M);
-            run_diffusion(M, N, argv[1][0]);   
+            run_diffusion_a(M, N);   
             break;
 
         case 'b' :
 
             init_matrix_b(M);
             // print_matrix(M);
-            run_diffusion(M, N, argv[1][0]);   
+            run_diffusion_b(M, N);   
             break;
 
         default :
@@ -133,19 +135,17 @@ void fprint_matrix(double *M, FILE *fp) {
 }
 
 
-void run_diffusion(double *M, double *N, char type){
+void run_diffusion_a(double *M, double *N){
 
     FILE *time_fp, *temp_fp;
-    char time_fn[32], temp_fn[32];
     int i, j, k, num_th, cond;
     double itime, ftime, exec_time = 0.0;
 
     num_th = atoi(getenv("OMP_NUM_THREADS"));
-    cond   = num_th == 10 && ITER > 999999;
+    cond   = num_th == PT && ITER > 999999;
 
     //open files to write data
-    sprintf(time_fn, "./data/time_conf_%c", type);
-    time_fp = fopen(time_fn, "a");
+    time_fp = fopen("./data/time_conf_a", "a");
     if (time_fp == NULL){
         printf("Cannot open time_fp\n");
         return;
@@ -153,8 +153,7 @@ void run_diffusion(double *M, double *N, char type){
 
     if (cond){
 
-        sprintf(temp_fn, "./data/temp_conf_%c", type);
-        temp_fp = fopen(temp_fn, "w");
+        temp_fp = fopen("./data/temp_conf_a", "w");
         if (time_fp == NULL){
             printf("Cannot open time_fp\n");
             return;
@@ -165,35 +164,22 @@ void run_diffusion(double *M, double *N, char type){
     for (i=0; i < ITER; i++){
         
         itime = omp_get_wtime();
-
         #pragma omp parallel for collapse(2)
         for (j = 0; j < MSIZE; j++) {
             for (k = 0; k < MSIZE; k++) {
 
-                if(i%2 == 0){
-
-                    if (type == 'a')               
-                        isotropic_nv(M, N, j, k);
-                    else 
-                        anisotropic_nv(M, N, j, k);
-                } 
-                else {
-
-                    if (type == 'a') 
-                        isotropic_nv(N, M, j, k);
-                    else 
-                        anisotropic_nv(N, M, j, k);
-                }
+                if(i%2 == 0)        
+                    isotropic_nv(M, N, j, k);
+                else
+                    isotropic_nv(N, M, j, k);
             }
         }
 
         ftime = omp_get_wtime();
         exec_time += ftime - itime;
 
-        if (i%1000 == 0 && cond) {
-
+        if (i%1000 == 0 && cond)
             fprint_matrix(N, temp_fp);
-        }
     }
 
     fprintf(time_fp, "%d %f\n", num_th, exec_time);
@@ -205,7 +191,6 @@ void run_diffusion(double *M, double *N, char type){
             fprint_matrix(N, temp_fp);
         else 
             fprint_matrix(M, temp_fp);
-
         fclose(temp_fp);
     }
     return;
@@ -245,6 +230,67 @@ void isotropic_nv (double *M, double *N, int j, int k) {
         N[j*MSIZE+k] = (M[j*MSIZE+(k+1)] + M[j*MSIZE+(k-1)] + M[(j+1)*MSIZE+k] + M[(j-1)*MSIZE+k]) / 4;
 
     return;    
+}
+
+void run_diffusion_b(double *M, double *N){
+
+    FILE *time_fp, *temp_fp;
+    int i, j, k, num_th, cond;
+    double itime, ftime, exec_time = 0.0;
+
+    num_th = atoi(getenv("OMP_NUM_THREADS"));
+    cond   = num_th == PT && ITER > 999999;
+
+    //open files to write data
+    time_fp = fopen("./data/time_conf_b", "a");
+    if (time_fp == NULL){
+        printf("Cannot open time_fp\n");
+        return;
+    }
+
+    if (cond){
+
+        temp_fp = fopen("./data/temp_conf_b", "w");
+        if (time_fp == NULL){
+            printf("Cannot open time_fp\n");
+            return;
+        }
+        fprint_matrix(M, temp_fp);
+    }
+    
+    for (i=0; i < ITER; i++){
+        
+        itime = omp_get_wtime();
+        #pragma omp parallel for collapse(2)
+        for (j = 0; j < MSIZE; j++) {
+            for (k = 0; k < MSIZE; k++) {
+
+                if(i%2 == 0)        
+                    anisotropic_nv(M, N, j, k);
+                else
+                    anisotropic_nv(N, M, j, k);
+            }
+        }
+
+        ftime = omp_get_wtime();
+        exec_time += ftime - itime;
+
+        if (i%1000 == 0 && cond)
+            fprint_matrix(N, temp_fp);
+    }
+
+    fprintf(time_fp, "%d %f\n", num_th, exec_time);
+    fclose(time_fp);
+
+    if (i%100 != 0 && cond) {
+        
+        if (i%2 == 0)
+            fprint_matrix(N, temp_fp);
+        else 
+            fprint_matrix(M, temp_fp);
+        fclose(temp_fp);
+    }
+    return;
 }
 
 void anisotropic_nv(double *M, double *N, int j, int k) {

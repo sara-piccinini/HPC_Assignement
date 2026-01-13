@@ -1,9 +1,9 @@
 EXEC="Heat_diff"
-THREADS='1 2 4 8 12 16'
+THREADS='1 2 4 8 10 12 14 16'
 CONFIG='a b'
 ITER=10000
 
-gcc -fopenmp Heat_diff.c -o $EXEC
+gcc -fopenmp Heat_diff.c -o ./$EXEC
 
 rm ./data/time_conf_a
 rm ./data/time_conf_b
