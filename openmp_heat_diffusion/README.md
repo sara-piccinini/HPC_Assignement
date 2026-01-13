@@ -34,4 +34,4 @@ It can be seen that in the first configuration the diffusion is quite slow, and,
 
 The second configuration seems to diffuse significantly faster than the first one. This is due to a bigger contact surface between the two different temperatures. Since the diffusion coefficients on the horizontal axis are higher, consiquently also the heat exchange goes faster in that direction.
 
-![Evolution in the firsts 10000 iterations](./plot/hd_conf_b.jpg) ![Diffusion conf a](./plot/temp_b.gif)git
+![Evolution in the firsts 10000 iterations](./plot/hd_conf_b.jpg) ![Diffusion conf a](./plot/temp_b.gif)
