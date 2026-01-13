@@ -7,7 +7,7 @@
 /* Dimensione della matrice quadrata */
 #define N 500 
 
-/* Prototipi delle funzioni per leggere/scrivere le matrici da/verso CSV */
+/* Prototipi per lettura/scrittura CSV */
 void read_matrix_from_csv();
 void write_matrix_to_csv();
 
@@ -15,22 +15,22 @@ void write_matrix_to_csv();
 
 int main(int argc, char *argv[]){
 	
-	/* Rank, numero di processi e variabili per misurare il tempo */
+	/* Rank, numero processi e variabili per il tempo */
 	int rank, size;
 	double start_time, end_time, elapsed_time;
 	
 	
-	/* Inizializzazione MPI */ 
+	/* Avvio MPI */ 
 	MPI_Init(&argc, &argv);
 	
-	/* Recupero del rank del processo in MPI_COMM_WORLD */
+	/* Recupero rank e numero totale di processi */
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	
-	/* Recupero del numero totale di processi in MPI_COMM_WORLD */
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+	/* p = radice del numero di processi (griglia p x p) */
+	int p = (int)sqrt(size);	
 	
-	/* Controllo argomenti in input (eseguibile, file A, file B, file output, file tempi).
-	   Se mancano, chiudo. */
+	/* Controllo argomenti: eseguibile + file A + file B + file output + file tempi */
 	if (argc < 5) {
 		if (rank == 0) {
 			printf("Dati di input mancanti: %s\n", argv[0]);
@@ -44,10 +44,9 @@ int main(int argc, char *argv[]){
 		start_time = MPI_Wtime();
 	}
 	
-	/* p = radice quadrata del numero di processi (griglia p x p) */
-	int p = (int)sqrt(size);	
 	
-	/* Verifico che il numero di processi sia un quadrato perfetto */
+	
+	/* Verifico che size sia un quadrato perfetto */
 	if (p*p!=size){
 		if (rank==0){
 			printf("Il numero di processi deve essere un quadrato perfetto.\n");
@@ -92,7 +91,7 @@ int main(int argc, char *argv[]){
 	int *counts = malloc(size * sizeof(int));	
 	int *displs = malloc(size * sizeof(int));	
 	
-	/* Riempio counts e displs scorrendo la griglia p x p */
+	/* Inizializzo counts e displs scorrendo la griglia p x p */
 	for (int i=0,idx=0; i<p; i++){
 		for (int j=0; j<p; j++, idx++){
 			counts[idx] = 1;
@@ -128,7 +127,6 @@ int main(int argc, char *argv[]){
 	/* Dimensioni della griglia 2D: p righe e p colonne */
 	int dims[2] = {p, p};
 	
-	/* Periodicità su entrambe le dimensioni (topologia toroidale) */
     int periods[2] = {1, 1};
 	
 	/* Nuovo comunicatore associato alla griglia */
@@ -154,7 +152,7 @@ int main(int argc, char *argv[]){
     MPI_Cart_shift(grid_comm, 1, -1, &right, &left); 
     MPI_Cart_shift(grid_comm, 0, -1, &down, &up);    
 	
-	/* Buffer temporaneo per gli shift iniziali */
+	/* Buffer temporaneo per gli allineamenti iniziali */
 	double *tmp_block = malloc(block_size * block_size * sizeof(double));
 	
 	
@@ -200,7 +198,8 @@ int main(int argc, char *argv[]){
 
 
 
-    
+
+
 
 
     /* MULTIPLICATION & SHIFTING - Cannon (3)*/
@@ -217,7 +216,7 @@ int main(int argc, char *argv[]){
             }
         }
 	
-		/* Buffer di appoggio per ricevere i nuovi blocchi durante lo scambio */
+		/* Buffer temporaneo per ricevere i nuovi blocchi durante lo scambio */
         double *tmp_A = malloc(block_size * block_size * sizeof(double));
 		double *tmp_B = malloc(block_size * block_size * sizeof(double));
 
@@ -329,6 +328,7 @@ void read_matrix_from_csv(const char *filename, double *matrix, int n) {
 
     fclose(fp);
 }
+
 
 /* Scrittura matrice di output */
 void write_matrix_to_csv(const char *filename, double *matrix, int n) {
