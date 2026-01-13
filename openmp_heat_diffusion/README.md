@@ -28,6 +28,10 @@ At each iteration, the computation time of the matrix update is taken using the 
 
 From another script, a gif of the diffusion has been created together with a set of immages showing the plate status in the firsts 10000 cycles are generated. 
 It can be seen that in the first configuration the diffusion is quite slow, and, after 10000 iterations, the cells away from the center of the plate are left unchanged. After 100000 iterations instead, that is how far the the gif goes, even the edges of the plate are starting to have the effect of the diffusion, even if moderately.
-![Evolution in the firsts 10000 iterations](./plot/hd_conf_a.jpg) ![Diffusion conf a](./plot/temp_a.gif)
+
+![Evolution in the firsts 10000 iterations](./plot/hd_conf_a.jpg)
+![Diffusion conf a](./plot/temp_a.gif)
+
 The second configuration seems to diffuse significantly faster than the first one. This is due to a bigger contact surface between the two different temperatures. Since the diffusion coefficients on the horizontal axis are higher, consiquently also the heat exchange goes faster in that direction.
+
 ![Evolution in the firsts 10000 iterations](./plot/hd_conf_b.jpg) ![Diffusion conf a](./plot/temp_b.gif)git
