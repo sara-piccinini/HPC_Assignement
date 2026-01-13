@@ -65,6 +65,7 @@ int main(int argc, char *argv[]){
 		return 1;
 	}
 	
+
 	/* Dimensione del blocco locale (righe/colonne per ciascun PE) */
 	int block_size = N/p; 
 	
@@ -188,6 +189,7 @@ int main(int argc, char *argv[]){
         MPI_Recv(tmp_block, block_size*block_size, MPI_DOUBLE, down, 0, grid_comm, &status);
         MPI_Send(B_block, block_size*block_size, MPI_DOUBLE, up, 0, grid_comm);
 		}
+    /* Aggiorno B_block con il blocco appena ricevuto */
     memcpy(B_block, tmp_block, block_size*block_size*sizeof(double));
 	}
 	
