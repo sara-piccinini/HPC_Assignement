@@ -38,16 +38,14 @@ Border pixels are padded with zero values.
 
 ## Directory Structure
 
-- **Es2.cu**  
-  CUDA implementation of the stencil-based image filter
-
-- **Es2.sh**  
+**Es2.cu**  
+  CUDA implementation of the stencil-based image filter**Es2.sh**  
   Script for compilation, execution, and GPU profiling
 
-- **AddS&P.py**  
+**AddS&P.py**  
   Python script to add salt-and-pepper noise to images
 
-- **README.md**  
+**README.md**  
   Documentation for Exercise 2
 
 ---
