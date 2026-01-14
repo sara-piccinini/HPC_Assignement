@@ -95,7 +95,9 @@ The CUDA program processes a single image using the stencil filter.
 ./Es2 <input_image> <output_image> [-s]
 
 <input_image>: path to the input image
+
 <output_image>: path or name of the output image
+
 -s (optional): save the filtered image to disk
 
 ### Output
