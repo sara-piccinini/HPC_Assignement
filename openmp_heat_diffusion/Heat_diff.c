@@ -9,7 +9,7 @@
 #define Wx 0.3
 #define Wy 0.2
 #define PT 10
-int ITER = 1000;
+int ITER = 10000;
 
 
 void init_matrix_a(double *M);
@@ -138,14 +138,16 @@ void fprint_matrix(double *M, FILE *fp) {
 void run_diffusion_a(double *M, double *N){
 
     FILE *time_fp, *temp_fp;
+    char time_fn[32];
     int i, j, k, num_th, cond;
     double itime, ftime, exec_time = 0.0;
 
     num_th = atoi(getenv("OMP_NUM_THREADS"));
-    cond   = num_th == PT && ITER > 999999;
+    cond   = num_th == PT && ITER > 99999;
 
     //open files to write data
-    time_fp = fopen("./data/time_conf_a", "a");
+    sprintf(time_fn, "./data/time_conf_a_%d", ITER);
+    time_fp = fopen(time_fn, "a");
     if (time_fp == NULL){
         printf("Cannot open time_fp\n");
         return;
@@ -178,7 +180,7 @@ void run_diffusion_a(double *M, double *N){
         ftime = omp_get_wtime();
         exec_time += ftime - itime;
 
-        if (i%1000 == 0 && cond)
+        if ((i+1)%2500 == 0 && cond)
             fprint_matrix(N, temp_fp);
     }
 
@@ -235,6 +237,7 @@ void isotropic_nv (double *M, double *N, int j, int k) {
 void run_diffusion_b(double *M, double *N){
 
     FILE *time_fp, *temp_fp;
+    char time_fn[32];
     int i, j, k, num_th, cond;
     double itime, ftime, exec_time = 0.0;
 
@@ -242,7 +245,8 @@ void run_diffusion_b(double *M, double *N){
     cond   = num_th == PT && ITER > 999999;
 
     //open files to write data
-    time_fp = fopen("./data/time_conf_b", "a");
+    sprintf(time_fn, "./data/time_conf_b_%d", ITER);
+    time_fp = fopen(time_fn, "a");
     if (time_fp == NULL){
         printf("Cannot open time_fp\n");
         return;
@@ -275,7 +279,7 @@ void run_diffusion_b(double *M, double *N){
         ftime = omp_get_wtime();
         exec_time += ftime - itime;
 
-        if (i%1000 == 0 && cond)
+        if ((i+1)%2500 == 0 && cond)
             fprint_matrix(N, temp_fp);
     }
 

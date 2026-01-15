@@ -24,17 +24,17 @@ def num_matrix():
                 i += 1
     return i//1024
 
-def cond(nmi):
+def coord(nmi):
     if(nmi == 1):
         return [0, 0]
-    elif(nmi == 3):
+    elif(nmi == 2):
         return [0, 1]
-    elif(nmi == 7):
+    elif(nmi == 3):
         return [1, 0]
-    elif(nmi == 11):
+    elif(nmi == 5):
         return [1, 1]
     else:
-        return [-1, -1]
+        return [-1,-1]
 
 temp = './data/temp_conf_'
 confs = ['a', 'b']
@@ -49,11 +49,13 @@ cbar = None
 
 ##for partial matrix
 figm, axm = plt.subplots(2, 2)
+figm.tight_layout()
+figm.subplots_adjust(top=0.88, hspace=0.25, wspace=0.18, left=0.05, right=0.99, bottom=0.05)
 
 for c in confs:
     with open(temp+c, 'r') as t:
         nmi = 0
-        figm.suptitle('Heat diffusion config ' + c)
+        figm.suptitle('Heat diffusion config ' + c, y=0.98, fontsize=15)
         row = t.readline()
         while(row):
 
@@ -64,16 +66,19 @@ for c in confs:
                 row = t.readline()
 
             nmi += 1
+            f = coord(nmi)
+            if(f != [-1,-1]):
 
-            f = cond(nmi)
-            if(f[0] != -1):
-                axmi = axm[f[0]][f[1]].imshow(matrix[nmi-1], cmap='rainbow', vmin=matrix.min(), vmax=matrix.max())            
+                axmi = axm[f[0]][f[1]].imshow(matrix[nmi-1], cmap='rainbow', vmin=matrix.min(), vmax=matrix.max())  
+                axm[f[0]][f[1]].set_title(f'Iteration {(nmi-1)*2500}')       
+                axm[f[0]][f[1]].tick_params( axis='both', which='major', labelsize=6)   
+
                 if(f == [0, 0]):
                     if(cbar is not None):
                         cbar.update_normal(axmi)
                     else:
                         cbar = figm.colorbar(axmi, ax=axm)  
-                figm.savefig('./plot/hd_conf_' + c + '.jpg')
+                figm.savefig('./plot/hd_conf_' + c + '.jpg', dpi=300)
 
             row = t.readline()
 

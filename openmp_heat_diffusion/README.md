@@ -26,7 +26,7 @@ Parallelization is performed inside each iteration, using the OpenMP directive *
 ### Data analysis
 At each iteration, the computation time of the matrix update is taken using the openmp function *omp_get_wtime();*. As mentioned before, also a file containing the matrices status is created when the contraints are met. From the graph showing the computational time with respect to the number of threads iot can be seen that 
 
-From another script, a gif of the diffusion has been created together with a set of immages showing the plate status in the firsts 10000 cycles are generated. 
+From another script, a gif of the diffusion has been created together with a set of images showing the plate status in the firsts 10000 cycles are generated. 
 It can be seen that in the first configuration the diffusion is quite slow, and, after 10000 iterations, the cells away from the center of the plate are left unchanged. After 100000 iterations instead, that is how far the the gif goes, even the edges of the plate are starting to have the effect of the diffusion, even if moderately.
 
 ![Evolution in the firsts 10000 iterations](./plot/hd_conf_a.jpg)
