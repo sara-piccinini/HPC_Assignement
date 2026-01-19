@@ -43,14 +43,15 @@ nm = num_matrix()
 matrix = np.zeros((nm, 1024, 1024))
 
 ## for gifs
-# fig, ax = plt.subplots()
-# ax.set(title=('Heat diffusion config a'), xlim=([0, 1024]))
+fig, ax = plt.subplots()
+ax.set(title=('Heat diffusion config a'), xlim=([0, 1024]))
 cbar = None
 
 ##for partial matrix
 figm, axm = plt.subplots(2, 2)
 figm.tight_layout()
 figm.subplots_adjust(top=0.88, hspace=0.25, wspace=0.18, left=0.05, right=0.99, bottom=0.05)
+cbarp = None
 
 for c in confs:
     with open(temp+c, 'r') as t:
@@ -74,16 +75,16 @@ for c in confs:
                 axm[f[0]][f[1]].tick_params( axis='both', which='major', labelsize=6)   
 
                 if(f == [0, 0]):
-                    if(cbar is not None):
-                        cbar.update_normal(axmi)
+                    if(cbarp is not None):
+                        cbarp.update_normal(axmi)
                     else:
-                        cbar = figm.colorbar(axmi, ax=axm)  
-                figm.savefig('./plot/hd_conf_' + c + '.jpg', dpi=300)
+                        cbarp = figm.colorbar(axmi, ax=axm)  
+                figm.savefig('./plot/hd_conf_' + c + '.jpg', dpi=450)
 
             row = t.readline()
 
-        # anim = animation.FuncAnimation(fig, animate, init_func=init_matrix, frames=(nm), interval=100, blit=False)
-        # anim.save('./plot/temp_' + c + '.gif')
+        anim = animation.FuncAnimation(fig, animate, init_func=init_matrix, frames=(nm), interval=100, blit=False)
+        anim.save('./plot/temp_' + c + '.gif', dpi=450)
 
 
 

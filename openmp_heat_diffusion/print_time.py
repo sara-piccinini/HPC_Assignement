@@ -10,7 +10,7 @@ min_tim = [[], []]
 
 colors = ['r', 'g', 'b']
 fig, ax = plt.subplots(3,2) 
-fig.suptitle("Performance", fontsize=15)
+fig.suptitle("Performance with dynamic scheduling (100 chucks)", fontsize=15)
 fig.supylabel("Time [s]", fontsize=10)
 fig.supxlabel("Number of threads", fontsize=10)
 fig.subplots_adjust(top=0.89, hspace=0.25, wspace=0.15, left=0.09, right=0.97, bottom=0.09)
@@ -56,7 +56,7 @@ for i, name in enumerate(ti_name):
     data_tm.append(conf_time) 
 
 fig.legend()  
-fig.savefig('./plot/Timevsnumth.jpg', dpi=400)
+fig.savefig('./plot/Timevsnumth_dinamsched.jpg', dpi=450)
 plt.show()  
 
 # compute speed up
@@ -66,11 +66,11 @@ for i in range(len(ti_name)):
         for k in range(len(data_tm[i][j])):
             data_tm[i][j][k] = (1 - data_tm[i][j][k]/norm)*100
 
-width=0.8
+width=1
 for i, lb in enumerate(label):
 
     fig, ax = plt.subplots(1,1)
-    fig.suptitle("Speedup with " + lb, fontsize=15)
+    fig.suptitle("Speedup with " + lb + ' dynamic scheduling', fontsize=15)
     fig.subplots_adjust(top=0.89, hspace=0.25, wspace=0.15, left=0.09, right=0.97, bottom=0.09)
 
     for j in range(-1, len(niter)-1):
@@ -79,10 +79,10 @@ for i, lb in enumerate(label):
     plt.xticks(data_th[i][j][2:], data_th[i][j][2:])
     ax.set_xlabel('Threads', fontsize=10)
     ax.set_ylabel('% of speedup', fontsize=10)
-    ax.set_xlim(1, 50)
+    ax.set_xlim(1, 54)
     ax.set_ylim(70, 100)
     ax.legend()
-    fig.savefig('./plot/speedup_'+lb, dpi=450)
+    fig.savefig('./plot/speedupscheddinam_'+lb, dpi=450)
     plt.show()
 
 # fig, ax = plt.subplots(1,1)

@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
 
 void init_matrix_a (double *M){
 
-    #pragma omp parrallel for collapse(2)
+    #pragma omp parrallel for collapse(2) schedule(guided, 100)
     for(int i=0; i < MSIZE; i++)
         for (int j = 0; j < MSIZE; j++) 
             if (j < MSIZE/2)
@@ -91,7 +91,7 @@ void init_matrix_a (double *M){
 
 void init_matrix_b (double *M){
 
-    #pragma omp parrallel for collapse(2)
+    #pragma omp parrallel for collapse(2) schedule(guided, 100)
     for(int i=0; i < MSIZE; i++)
         for (int j = 0; j < MSIZE; j++) 
             if (j >= MSIZE/4 && j < MSIZE*3/4 && i >= MSIZE/4 && i < MSIZE*3/4)
@@ -103,7 +103,7 @@ void init_matrix_b (double *M){
 
 void init_zero(double *M){
 
-    #pragma omp parallel for collapse(2)
+    #pragma omp parallel for collapse(2) schedule(guided, 100)
     for(int i=0; i < MSIZE; i++)
         for (int j = 0; j < MSIZE; j++) 
             M[i*MSIZE+j] = 0.0;
@@ -166,15 +166,18 @@ void run_diffusion_a(double *M, double *N){
     for (i=0; i < ITER; i++){
         
         itime = omp_get_wtime();
-        #pragma omp parallel for collapse(2)
-        for (j = 0; j < MSIZE; j++) {
-            for (k = 0; k < MSIZE; k++) {
+        if(i%2 == 0) {
 
-                if(i%2 == 0)        
+            #pragma omp parallel for collapse(2) schedule(guided, 100)
+            for (j = 0; j < MSIZE; j++)
+                for (k = 0; k < MSIZE; k++)
                     isotropic_nv(M, N, j, k);
-                else
+        }
+        else {
+            #pragma omp parallel for collapse(2) schedule(guided, 100)
+            for (j = 0; j < MSIZE; j++)
+                for (k = 0; k < MSIZE; k++)
                     isotropic_nv(N, M, j, k);
-            }
         }
 
         ftime = omp_get_wtime();
@@ -242,7 +245,7 @@ void run_diffusion_b(double *M, double *N){
     double itime, ftime, exec_time = 0.0;
 
     num_th = atoi(getenv("OMP_NUM_THREADS"));
-    cond   = num_th == PT && ITER > 999999;
+    cond   = num_th == PT && ITER > 99999;
 
     //open files to write data
     sprintf(time_fn, "./data/time_conf_b_%d", ITER);
@@ -265,17 +268,19 @@ void run_diffusion_b(double *M, double *N){
     for (i=0; i < ITER; i++){
         
         itime = omp_get_wtime();
-        #pragma omp parallel for collapse(2)
-        for (j = 0; j < MSIZE; j++) {
-            for (k = 0; k < MSIZE; k++) {
+        if(i%2 == 0) {
 
-                if(i%2 == 0)        
+            #pragma omp parallel for collapse(2) schedule(guided, 100) 
+            for (j = 0; j < MSIZE; j++)
+                for (k = 0; k < MSIZE; k++)
                     anisotropic_nv(M, N, j, k);
-                else
-                    anisotropic_nv(N, M, j, k);
-            }
         }
-
+        else {
+            #pragma omp parallel for collapse(2) schedule(guided, 100)
+            for (j = 0; j < MSIZE; j++)
+                for (k = 0; k < MSIZE; k++)
+                    anisotropic_nv(N, M, j, k);
+        }
         ftime = omp_get_wtime();
         exec_time += ftime - itime;
 
